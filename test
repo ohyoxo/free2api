@@ -1,0 +1,431 @@
+// @name Supjav Widget
+// @description Supjav 影片资源模块（ForwardWidget 格式）
+// @version 1.0.0
+// @author Luomo
+ 
+var DEFAULT_HOST = "https://supjav.com";
+ 
+WidgetMetadata = {
+    id: "forward.supjav",
+    title: "Supjav",
+    version: "1.0.0",
+    requiredVersion: "0.0.1",
+    description: "Supjav 影片资源，支持分类筛选和搜索",
+    author: "Luomo",
+    site: "https://supjav.com",
+    detailCacheDuration: 300,
+    modules: [
+        {
+            id: "loadList",
+            title: "热门",
+            functionName: "loadPopular",
+            cacheDuration: 1800,
+            params: [
+                {
+                    name: "time",
+                    title: "时间范围",
+                    type: "enumeration",
+                    value: "",
+                    enumOptions: [
+                        { title: "本月热门", value: "month" },
+                        { title: "本周热门", value: "week" },
+                        { title: "今日热门", value: "" }
+                    ]
+                },
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "有码",
+            functionName: "loadCensored",
+            cacheDuration: 1800,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "无码",
+            functionName: "loadUncensored",
+            cacheDuration: 1800,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "素人",
+            functionName: "loadAmateur",
+            cacheDuration: 1800,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "中文字幕",
+            functionName: "loadChinese",
+            cacheDuration: 1800,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "分类",
+            functionName: "loadCategories",
+            cacheDuration: 3600,
+            params: []
+        },
+        {
+            id: "loadList",
+            title: "标签筛选",
+            functionName: "loadByTag",
+            cacheDuration: 1800,
+            params: [
+                {
+                    name: "tagId",
+                    title: "标签",
+                    type: "enumeration",
+                    value: "",
+                    enumOptions: []
+                },
+                { name: "page", title: "页码", type: "page" }
+            ]
+        }
+    ],
+    search: {
+        title: "搜索",
+        functionName: "search",
+        params: [
+            { name: "keyword", title: "关键词", type: "input", value: "" },
+            { name: "page", title: "页码", type: "page", value: "1" }
+        ]
+    }
+};
+ 
+function formatImgUrl(url) {
+    if (!url) return "";
+    if (url.startsWith("//")) {
+        url = "https:" + url;
+    }
+    return url;
+}
+ 
+function cleanText(text) {
+    return String(text || "").trim();
+}
+ 
+async function fetchHtml(url) {
+    try {
+        var res = await Widget.http.get(url, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
+            },
+            timeout: 15000
+        });
+        return res.data || res;
+    } catch (e) {
+        console.error("[Supjax] 请求失败:", url, e.message);
+        return null;
+    }
+}
+ 
+function parseHtml(html) {
+    if (!html) return null;
+    return Widget.html.load(html);
+}
+ 
+async function loadPopular(params = {}) {
+    var timeRange = params.time || "";
+    var page = params.page || 1;
+    var url = DEFAULT_HOST + "/popular/" + timeRange + "/page/" + page;
+    
+    var html = await fetchHtml(url);
+    if (!html) return [];
+    
+    var $ = parseHtml(html);
+    if (!$) return [];
+    
+    var items = [];
+    $(".post").each(function() {
+        var item = $(this);
+        var linkEl = item.find(".img");
+        var href = linkEl.attr("href");
+        if (!href) return;
+        
+        var urlObj = new URL(href, DEFAULT_HOST);
+        var pathParts = urlObj.pathname.split("/");
+        var videoId = pathParts[2];
+        
+        items.push({
+            id: videoId,
+            type: "url",
+            mediaType: "movie",
+            title: cleanText(linkEl.attr("title")),
+            posterPath: formatImgUrl(item.find("img").data("original")),
+            backdropPath: formatImgUrl(item.find("img").data("original")),
+            description: cleanText(item.find(".meta").text()),
+            link: "supjax_detail:" + videoId
+        });
+    });
+    
+    return items;
+}
+ 
+async function loadCensored(params = {}) {
+    var page = params.page || 1;
+    return loadCategoryPage("category/censored-jav", page);
+}
+ 
+async function loadUncensored(params = {}) {
+    var page = params.page || 1;
+    return loadCategoryPage("category/uncensored-jav", page);
+}
+ 
+async function loadAmateur(params = {}) {
+    var page = params.page || 1;
+    return loadCategoryPage("category/amateur", page);
+}
+ 
+async function loadChinese(params = {}) {
+    var page = params.page || 1;
+    return loadCategoryPage("category/chinese-subtitles", page);
+}
+ 
+async function loadCategoryPage(categoryPath, page) {
+    var url = DEFAULT_HOST + "/" + categoryPath + "/page/" + page;
+    var html = await fetchHtml(url);
+    if (!html) return [];
+    
+    var $ = parseHtml(html);
+    if (!$) return [];
+    
+    var items = [];
+    $(".post").each(function() {
+        var item = $(this);
+        var linkEl = item.find(".img");
+        var href = linkEl.attr("href");
+        if (!href) return;
+        
+        var urlObj = new URL(href, DEFAULT_HOST);
+        var pathParts = urlObj.pathname.split("/");
+        var videoId = pathParts[2];
+        
+        items.push({
+            id: videoId,
+            type: "url",
+            mediaType: "movie",
+            title: cleanText(linkEl.attr("title")),
+            posterPath: formatImgUrl(item.find("img").data("original")),
+            backdropPath: formatImgUrl(item.find("img").data("original")),
+            description: cleanText(item.find(".date").text()),
+            link: "supjax_detail:" + videoId
+        });
+    });
+    
+    return items;
+}
+ 
+async function loadCategories(params = {}) {
+    var url = DEFAULT_HOST + "/zh/categorys";
+    var html = await fetchHtml(url);
+    if (!html) return [];
+    
+    var $ = parseHtml(html);
+    if (!$) return [];
+    
+    var items = [];
+    $(".categorys .child").each(function() {
+        var child = $(this);
+        var linkEl = child.find("a");
+        var href = linkEl.attr("href");
+        if (!href) return;
+        
+        var urlObj = new URL(href, DEFAULT_HOST);
+        var pathParts = urlObj.pathname.split("/");
+        var tagId = (pathParts[2] || "") + "/" + (pathParts[3] || "");
+        
+        var text = cleanText(child.text()).split("(");
+        var tagName = text[0];
+        var count = text[1] ? parseInt(text[1]) : 0;
+        
+        items.push({
+            id: tagId,
+            type: "url",
+            mediaType: "movie",
+            title: tagName,
+            posterPath: "https://via.placeholder.com/200x200?text=" + encodeURIComponent(tagName),
+            description: count + " 部影片",
+            link: "supjax_tag:" + tagId
+        });
+    });
+    
+    return items;
+}
+ 
+async function loadByTag(params = {}) {
+    var tagId = params.tagId;
+    var page = params.page || 1;
+    
+    if (!tagId) {
+        return loadCategories(params);
+    }
+    
+    var url = DEFAULT_HOST + "/zh/" + tagId + "/page/" + page;
+    var html = await fetchHtml(url);
+    if (!html) return [];
+    
+    var $ = parseHtml(html);
+    if (!$) return [];
+    
+    var items = [];
+    $(".post").each(function() {
+        var item = $(this);
+        var linkEl = item.find(".img");
+        var href = linkEl.attr("href");
+        if (!href) return;
+        
+        var urlObj = new URL(href, DEFAULT_HOST);
+        var pathParts = urlObj.pathname.split("/");
+        var videoId = pathParts[2];
+        
+        items.push({
+            id: videoId,
+            type: "url",
+            mediaType: "movie",
+            title: cleanText(linkEl.attr("title")),
+            posterPath: formatImgUrl(item.find("img").data("original")),
+            backdropPath: formatImgUrl(item.find("img").data("original")),
+            description: cleanText(item.find(".date").text()),
+            link: "supjax_detail:" + videoId
+        });
+    });
+    
+    return items;
+}
+ 
+async function search(params = {}) {
+    var keyword = (params.keyword || "").trim();
+    var page = params.page || 1;
+    
+    if (!keyword) {
+        return [];
+    }
+    
+    var url = DEFAULT_HOST + "/page/" + page + "?s=" + encodeURIComponent(keyword);
+    var html = await fetchHtml(url);
+    if (!html) return [];
+    
+    var $ = parseHtml(html);
+    if (!$) return [];
+    
+    var items = [];
+    $(".post").each(function() {
+        var item = $(this);
+        var linkEl = item.find(".img");
+        var href = linkEl.attr("href");
+        if (!href) return;
+        
+        var urlObj = new URL(href, DEFAULT_HOST);
+        var pathParts = urlObj.pathname.split("/");
+        var videoId = pathParts[2];
+        
+        items.push({
+            id: videoId,
+            type: "url",
+            mediaType: "movie",
+            title: cleanText(linkEl.attr("title")),
+            posterPath: formatImgUrl(item.find("img").data("original")),
+            backdropPath: formatImgUrl(item.find("img").data("original")),
+            description: cleanText(item.find(".date").text()),
+            link: "supjax_detail:" + videoId
+        });
+    });
+    
+    return items;
+}
+ 
+async function loadDetail(link) {
+    var videoId = "";
+    if (typeof link === "string") {
+        var match = link.match(/supjax_detail:(.+)/);
+        videoId = match ? match[1] : link;
+    }
+    
+    if (!videoId) return null;
+    
+    var url = DEFAULT_HOST + "/zh/" + videoId;
+    var html = await fetchHtml(url);
+    if (!html) return null;
+    
+    var $ = parseHtml(html);
+    if (!$) return null;
+    
+    var vodContent = cleanText($(".post-meta .img").attr("alt"));
+    var vodName = vodContent.replace("[无码破解]", "").trim();
+    var match = vodContent.match(/^[\w|-]+/);
+    if (match) {
+        vodName = match[0];
+    }
+    
+    var episodeItems = [];
+    $(".video-wrap .btn-server").each(function(i) {
+        var btn = $(this);
+        var serverName = cleanText(btn.text());
+        episodeItems.push({
+            id: videoId + "_" + i,
+            type: "url",
+            title: serverName + " - " + vodName,
+            link: "supjax_play:" + videoId + ":" + i
+        });
+    });
+    
+    var tags = [];
+    $(".post-meta .tags a").each(function() {
+        var tagName = cleanText($(this).text());
+        if (tagName) {
+            tags.push({ id: tagName, title: "#" + tagName });
+        }
+    });
+    
+    var categories = [];
+    $(".post-meta .cats a").each(function() {
+        var catName = cleanText($(this).text());
+        if (catName) {
+            categories.push({ id: catName, title: catName });
+        }
+    });
+    
+    return {
+        id: "supjax_" + videoId,
+        type: "url",
+        mediaType: "movie",
+        title: vodName,
+        description: vodContent,
+        posterPath: formatImgUrl($(".post-meta .img").attr("src")),
+        backdropPath: formatImgUrl($(".post-meta .img").attr("src")),
+        backdropPaths: [formatImgUrl($(".post-meta .img").attr("src"))],
+        genreItems: tags.concat(categories),
+        episodeItems: episodeItems,
+        link: link
+    };
+}
+ 
+async function loadPlayLink(link) {
+    var match = link.match(/supjax_play:([^:]+):(\d+)/);
+    if (!match) return null;
+    
+    var videoId = match[1];
+    var serverIndex = parseInt(match[2]);
+    
+    return {
+        id: "supjax_play_" + videoId + "_" + serverIndex,
+        type: "url",
+        videoUrl: DEFAULT_HOST + "/zh/" + videoId + "?server=" + serverIndex,
+        playerType: "app"
+    };
+}
