@@ -1,0 +1,401 @@
+// @name 虎牙直播 Widget
+// @description 虎牙直播资源（ForwardWidget 格式）
+// @version 1.0.0
+// @author SmartBook (converted for ForwardWidget)
+ 
+var MOBILE_UA = "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36";
+ 
+WidgetMetadata = {
+    id: "forward.huya.live",
+    title: "虎牙直播",
+    icon: "https://huya.com/favicon.ico",
+    version: "1.0.0",
+    requiredVersion: "0.0.1",
+    description: "虎牙直播资源，支持网游、单机、手游、娱乐分类浏览、搜索和观看直播",
+    author: "SmartBook",
+    site: "https://huya.com",
+    detailCacheDuration: 60,
+    modules: [
+        {
+            id: "loadList",
+            title: "网游",
+            functionName: "loadGameCategory",
+            cacheDuration: 300,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "单机",
+            functionName: "loadSingleCategory",
+            cacheDuration: 300,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "娱乐",
+            functionName: "loadEntertainmentCategory",
+            cacheDuration: 300,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "手游",
+            functionName: "loadMobileCategory",
+            cacheDuration: 300,
+            params: [
+                { name: "page", title: "页码", type: "page" }
+            ]
+        },
+        {
+            id: "loadList",
+            title: "全部分类",
+            functionName: "loadAllCategories",
+            cacheDuration: 600,
+            params: []
+        }
+    ],
+    search: {
+        title: "搜索主播",
+        functionName: "search",
+        params: [
+            { name: "keyword", title: "关键词", type: "input", value: "" },
+            { name: "page", title: "页码", type: "page", value: "1" }
+        ]
+    }
+};
+ 
+function cleanText(text) {
+    return String(text || "").trim();
+}
+ 
+async function request(url) {
+    try {
+        var res = await Widget.http.get(url, {
+            headers: {
+                "User-Agent": MOBILE_UA,
+                "Accept": "application/json, text/plain, */*"
+            },
+            timeout: 15000
+        });
+        return res.data || res;
+    } catch (e) {
+        console.error("[Huya] 请求失败:", url, e.message);
+        return null;
+    }
+}
+ 
+function parseResponse(text) {
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch (e) {
+        console.error("[Huya] JSON 解析失败:", e.message);
+        return null;
+    }
+}
+ 
+async function fetchLiveList(gameId, page) {
+    var url = "https://www.huya.com/cache.php?m=LiveList&do=getLiveListByPage&tagAll=0&gameId=" + 
+              encodeURIComponent(gameId) + "&page=" + page;
+    
+    var text = await request(url);
+    var rs = parseResponse(text);
+    var dataList = (rs && rs.data && rs.data.datas) || [];
+    
+    var items = [];
+    for (var i = 0; i < dataList.length; i++) {
+        var item = dataList[i];
+        items.push({
+            id: String(item.profileRoom || ""),
+            type: "url",
+            mediaType: "tv",
+            title: cleanText(item.introduction || item.roomName || ""),
+            posterPath: cleanText(item.screenshot || ""),
+            backdropPath: cleanText(item.screenshot || ""),
+            description: cleanText(item.nick || ""),
+            link: "huya_detail:" + (item.profileRoom || "")
+        });
+    }
+    
+    return {
+        items: items,
+        page: page,
+        totalPage: (rs && rs.data) ? rs.data.totalPage : 1,
+        totalCount: (rs && rs.data) ? rs.data.totalCount : items.length
+    };
+}
+ 
+async function loadGameCategory(params = {}) {
+    var page = params.page || 1;
+    var result = await fetchLiveList("1", page);
+    return result.items;
+}
+ 
+async function loadSingleCategory(params = {}) {
+    var page = params.page || 1;
+    var result = await fetchLiveList("2", page);
+    return result.items;
+}
+ 
+async function loadEntertainmentCategory(params = {}) {
+    var page = params.page || 1;
+    var result = await fetchLiveList("8", page);
+    return result.items;
+}
+ 
+async function loadMobileCategory(params = {}) {
+    var page = params.page || 1;
+    var result = await fetchLiveList("4", page);
+    return result.items;
+}
+ 
+async function loadAllCategories(params = {}) {
+    var categories = [
+        { id: "1", name: "网游" },
+        { id: "2", name: "单机" },
+        { id: "8", name: "娱乐" },
+        { id: "4", name: "手游" }
+    ];
+    
+    var allItems = [];
+    for (var i = 0; i < categories.length; i++) {
+        var cate = categories[i];
+        var result = await fetchLiveList(cate.id, 1);
+        if (result.items && result.items.length > 0) {
+            allItems = allItems.concat(result.items);
+        }
+    }
+    
+    return allItems;
+}
+ 
+async function search(params = {}) {
+    var keyword = (params.keyword || "").trim();
+    var page = params.page || 1;
+    var pagesize = 20;
+    
+    if (!keyword) {
+        return [];
+    }
+    
+    var paramsStr = "m=Search&do=getSearchContent&q=" + encodeURIComponent(keyword) +
+                    "&uid=0&v=4&typ=-5&livestate=0&rows=" + pagesize +
+                    "&start=" + ((page - 1) * pagesize);
+    
+    var url = "https://search.cdn.huya.com/?" + paramsStr;
+    var text = await request(url);
+    var result = parseResponse(text);
+    
+    var items = [];
+    var section = (result && result.response && result.response["1"]) || {};
+    var docs = section.docs || [];
+    
+    for (var i = 0; i < docs.length; i++) {
+        var item = docs[i];
+        var isLive = item.gameLiveOn === true || item.gameLiveOn === "true";
+        items.push({
+            id: String(item.room_id || ""),
+            type: "url",
+            mediaType: "tv",
+            title: cleanText(item.game_nick || item.game_introduction || item.game_roomName || ""),
+            posterPath: cleanText(item.game_screenshot || item.game_avatarUrl180 || ""),
+            description: isLive ? "直播中" : "未开播",
+            link: "huya_detail:" + (item.room_id || "")
+        });
+    }
+    
+    return items;
+}
+ 
+function extractStreamUrl(streamInfo, bitRate) {
+    var lines = (streamInfo && streamInfo.value) || [];
+    if (lines.length === 0) return null;
+    
+    var line = lines[0];
+    var rawLine = line.sFlvUrl || line.sHlsUrl || "";
+    var streamName = line.sStreamName || "";
+    var flvAntiCode = line.sFlvAntiCode || "";
+    var hlsAntiCode = line.sHlsAntiCode || "";
+    var presenterUid = line.lPresenterUid || 0;
+    
+    if (!rawLine || !streamName) return null;
+    
+    var flvLine = rawLine.replace("hls.huya.com", "flv.huya.com");
+    var hlsLine = rawLine.replace("flv.huya.com", "hls.huya.com");
+    
+    var flvUrl = flvLine + "/" + streamName + ".flv?" + flvAntiCode;
+    var hlsUrl = hlsLine + "/" + streamName + ".m3u8?" + hlsAntiCode;
+    
+    if (bitRate > 0) {
+        flvUrl += "&ratio=" + bitRate;
+        hlsUrl += "&ratio=" + bitRate;
+    }
+    
+    hlsUrl = hlsUrl.replace(/^http:\/\//, "https://");
+    flvUrl = flvUrl.replace(/^http:\/\//, "https://");
+    
+    return {
+        hlsUrl: hlsUrl,
+        flvUrl: flvUrl,
+        streamName: streamName,
+        presenterUid: presenterUid
+    };
+}
+ 
+async function loadDetail(link) {
+    var videoId = "";
+    if (typeof link === "string") {
+        var match = link.match(/huya_detail:(.+)/);
+        videoId = match ? match[1] : link;
+    }
+    
+    if (!videoId) return null;
+    
+    var url = "https://m.huya.com/" + videoId;
+    
+    try {
+        var res = await Widget.http.get(url, {
+            headers: { "User-Agent": MOBILE_UA },
+            timeout: 15000
+        });
+        
+        var resultText = res.data || res;
+        
+        var textMatch = String(resultText).match(/window\.HNF_GLOBAL_INIT\s*=\s*\{[\s\S]*?\}[\s\S]*?<\/script>/);
+        var text = textMatch ? textMatch[0] : null;
+        
+        var jsonObj = {};
+        if (text) {
+            var jsonText = text
+                .replace(/window\.HNF_GLOBAL_INIT\s*=\s*/, "")
+                .replace(/<\/script>/, "")
+                .replace(/function.*?\(.*?\)\s*\{[\s\S]*?\}/g, '""');
+            try { jsonObj = JSON.parse(jsonText); } catch(pe) { jsonObj = {}; }
+            
+            var topSidMatch = String(resultText).match(/lChannelId":([0-9]+)/);
+            var subSidMatch = String(resultText).match(/lSubChannelId":([0-9]+)/);
+            jsonObj.topSid = topSidMatch ? parseInt(topSidMatch[1], 10) : 0;
+            jsonObj.subSid = subSidMatch ? parseInt(subSidMatch[1], 10) : 0;
+        }
+        
+        var roomInfo = jsonObj;
+        var tLiveInfo = roomInfo.roomInfo && roomInfo.roomInfo.tLiveInfo || {};
+        var tProfileInfo = roomInfo.roomInfo && roomInfo.roomInfo.tProfileInfo || {};
+        
+        var title = cleanText(tLiveInfo.sIntroduction || tLiveInfo.sRoomName || "");
+        
+        var isLive = roomInfo.roomInfo && roomInfo.roomInfo.eLiveStatus === 2;
+        
+        var episodeItems = [];
+        var streamInfo = tLiveInfo.tLiveStreamInfo && tLiveInfo.tLiveStreamInfo.vStreamInfo;
+        
+        if (streamInfo && streamInfo.value && streamInfo.value.length > 0) {
+            var defaultBitrates = [
+                { name: "原画", bitRate: 0 },
+                { name: "高清", bitRate: 2000 },
+                { name: "流畅", bitRate: 500 }
+            ];
+            
+            for (var i = 0; i < defaultBitrates.length; i++) {
+                var db = defaultBitrates[i];
+                episodeItems.push({
+                    id: "huya_play_" + videoId + "_" + db.bitRate,
+                    type: "url",
+                    title: db.name + " - " + title,
+                    link: "huya_play:" + videoId + ":" + db.bitRate
+                });
+            }
+        }
+        
+        return {
+            id: "huya_" + videoId,
+            type: "url",
+            mediaType: "tv",
+            title: title,
+            description: cleanText(tLiveInfo.sIntroduction || ""),
+            posterPath: cleanText(tLiveInfo.sScreenshot || ""),
+            backdropPath: cleanText(tLiveInfo.sScreenshot || ""),
+            backdropPaths: [cleanText(tLiveInfo.sScreenshot || "")],
+            episodeItems: episodeItems,
+            genreItems: [],
+            link: link
+        };
+    } catch (e) {
+        console.error("[Huya] loadDetail 失败:", e.message);
+        return null;
+    }
+}
+ 
+async function loadPlayLink(link) {
+    var match = link.match(/huya_play:([^:]+):(\d+)/);
+    if (!match) return null;
+    
+    var videoId = match[1];
+    var bitRate = parseInt(match[2]);
+    
+    var url = "https://m.huya.com/" + videoId;
+    
+    try {
+        var res = await Widget.http.get(url, {
+            headers: { "User-Agent": MOBILE_UA },
+            timeout: 15000
+        });
+        
+        var resultText = res.data || res;
+        var textMatch = String(resultText).match(/window\.HNF_GLOBAL_INIT\s*=\s*\{[\s\S]*?\}[\s\S]*?<\/script>/);
+        var text = textMatch ? textMatch[0] : null;
+        
+        var jsonObj = {};
+        if (text) {
+            var jsonText = text
+                .replace(/window\.HNF_GLOBAL_INIT\s*=\s*/, "")
+                .replace(/<\/script>/, "")
+                .replace(/function.*?\(.*?\)\s*\{[\s\S]*?\}/g, '""');
+            try { jsonObj = JSON.parse(jsonText); } catch(pe) { jsonObj = {}; }
+        }
+        
+        var roomInfo = jsonObj;
+        var tLiveInfo = roomInfo.roomInfo && roomInfo.roomInfo.tLiveInfo || {};
+        var streamInfo = tLiveInfo.tLiveStreamInfo && tLiveInfo.tLiveStreamInfo.vStreamInfo;
+        
+        if (!streamInfo || !streamInfo.value || streamInfo.value.length === 0) {
+            return null;
+        }
+        
+        var line = streamInfo.value[0];
+        var rawLine = line.sFlvUrl || line.sHlsUrl || "";
+        var streamName = line.sStreamName || "";
+        var flvAntiCode = line.sFlvAntiCode || "";
+        var hlsAntiCode = line.sHlsAntiCode || "";
+        
+        var flvLine = rawLine.replace("hls.huya.com", "flv.huya.com");
+        var hlsLine = rawLine.replace("flv.huya.com", "hls.huya.com");
+        
+        var flvUrl = flvLine + "/" + streamName + ".flv?" + flvAntiCode;
+        var hlsUrl = hlsLine + "/" + streamName + ".m3u8?" + hlsAntiCode;
+        
+        if (bitRate > 0) {
+            flvUrl += "&ratio=" + bitRate;
+            hlsUrl += "&ratio=" + bitRate;
+        }
+        
+        hlsUrl = hlsUrl.replace(/^http:\/\//, "https://");
+        flvUrl = flvUrl.replace(/^http:\/\//, "https://");
+        
+        return {
+            id: "huya_play_" + videoId + "_" + bitRate,
+            type: "url",
+            videoUrl: hlsUrl,
+            playerType: "app"
+        };
+    } catch (e) {
+        console.error("[Huya] loadPlayLink 失败:", e.message);
+        return null;
+    }
+}
