@@ -29,17 +29,17 @@
   },
   "ruleExplore": {},
   "ruleSearch": {
-    "author": "class.btm a@text",
-    "bookList": "class.l.rank div.item",
+    "author": "div.btm a@text",
+    "bookList": ".item",
     "bookUrl": "dt a@href",
-    "coverUrl": "div.image a img@src",
+    "coverUrl": "img@src",
     "intro": "dd@text",
     "kind": "",
     "lastChapter": "",
     "name": "dt a@text"
   },
   "ruleToc": {
-    "chapterList": "id.list dd",
+    "chapterList": "#list dd",
     "chapterName": "a@text",
     "chapterUrl": "a@href",
     "nextTocUrl": "",
