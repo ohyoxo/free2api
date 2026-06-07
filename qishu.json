@@ -29,17 +29,17 @@
   },
   "ruleExplore": {},
   "ruleSearch": {
-    "author": ".s5@text",
-    "bookList": ".novelslist li, .result-list li, .search-list li, ul li:has(a)",
-    "bookUrl": "a@href",
-    "coverUrl": "",
+    "author": "class.btm a@text",
+    "bookList": "class.l.rank div.item",
+    "bookUrl": "dt a@href",
+    "coverUrl": "div.image a img@src",
     "intro": "dd@text",
-    "kind": ".s1@text",
+    "kind": "",
     "lastChapter": "",
-    "name": "a@text"
+    "name": "dt a@text"
   },
   "ruleToc": {
-    "chapterList": "#list dd, .chapter-list dd, .ml-list dd",
+    "chapterList": "id.list dd",
     "chapterName": "a@text",
     "chapterUrl": "a@href",
     "nextTocUrl": "",
