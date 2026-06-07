@@ -11,18 +11,18 @@
   "lastUpdateTime": 0,
   "respondTime": 0,
   "ruleBookInfo": {
-    "author": "class.info a@text",
-    "coverUrl": "class.info img@src",
+    "author": "#info p:first a@text",
+    "coverUrl": "#fmimg img@src",
     "init": "",
-    "intro": "class.intro@text",
-    "kind": "class.info a@text",
-    "lastChapter": "",
-    "name": "class.info h1@text",
+    "intro": "#intro@text",
+    "kind": ".con_top a:eq(1)@text",
+    "lastChapter": "#info p.hidden-xs a@text",
+    "name": "#info h1@text",
     "tocUrl": ""
   },
   "ruleContent": {
-    "content": "id.content@html",
-    "nextContentUrl": "a#next_url@href",
+    "content": "#booktxt@html",
+    "nextContentUrl": "a[rel=next]@href",
     "replaceRegex": "",
     "sourceRegex": "",
     "sourceRegexReplace": ""
@@ -30,18 +30,18 @@
   "ruleExplore": {},
   "ruleSearch": {
     "author": "div.btm a@text",
-    "bookList": ".item",
+    "bookList": "div.item",
     "bookUrl": "dt a@href",
-    "coverUrl": "img@src",
+    "coverUrl": "div.image img@src",
     "intro": "dd@text",
     "kind": "",
     "lastChapter": "",
     "name": "dt a@text"
   },
   "ruleToc": {
-    "chapterList": "#list dd",
-    "chapterName": "a@text",
-    "chapterUrl": "a@href",
+    "chapterList": "#list div#content_1 a",
+    "chapterName": "dd@text",
+    "chapterUrl": "@href",
     "nextTocUrl": "",
     "updateTime": ""
   },
