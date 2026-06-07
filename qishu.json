@@ -1,0 +1,86 @@
+{
+  "bookSourceName": "奇书阁",
+  "bookSourceGroup": "综合小说",
+  "bookSourceType": 0,
+  "bookSourceUrl": "http://www.qishuge.co/",
+  "loginUrl": "",
+  "ruleSearch": {
+    "searchUrl": "http://www.qishuge.co/search.php?keyword={{key}}&page={{page}}",
+    "ruleList": "//div[@class='list-item']",
+    "ruleName": "//div[@class='book-name']/a/text()",
+    "ruleAuthor": "//div[@class='book-author']/text()",
+    "ruleCover": "//div[@class='book-cover']/img/@src",
+    "ruleIntro": "//div[@class='book-intro']/text()",
+    "ruleBookUrl": "//div[@class='book-name']/a/@href"
+  },
+  "ruleExplore": {
+    "exploreUrl": "http://www.qishuge.co/",
+    "ruleList": "//div[@class='hot-list']//div[@class='book-item']",
+    "ruleName": "//div[@class='book-title']/a/text()",
+    "ruleAuthor": "//div[@class='book-author']/text()",
+    "ruleCover": "//div[@class='book-img']/img/@src",
+    "ruleIntro": "//div[@class='book-desc']/text()",
+    "ruleBookUrl": "//div[@class='book-title']/a/@href"
+  },
+  "ruleBookInfo": {
+    "ruleName": "//h1[@class='book-title']/text()",
+    "ruleAuthor": "//div[@class='book-info']//span[@class='author']/text()",
+    "ruleCover": "//div[@class='book-cover']/img/@src",
+    "ruleIntro": "//div[@class='book-intro']/p/text()",
+    "ruleLastChapter": "//div[@class='last-chapter']/a/text()",
+    "ruleUpdateTime": "//div[@class='book-info']//span[@class='update-time']/text()"
+  },
+  "ruleToc": {
+    "ruleTocUrl": "{{bookUrl}}",
+    "ruleList": "//div[@class='chapter-list']//li/a",
+    "ruleChapterName": "text()",
+    "ruleChapterUrl": "@href"
+  },
+  "ruleContent": {
+    "ruleContentUrl": "{{chapterUrl}}",
+    "ruleContent": "//div[@id='content']/text()",
+    "replaceRegex": "奇书阁.*?最新章节|请记住本站.*?|手机版.*?|阅读3.*?|加入书签.*?|推荐本书.*?|返回目录.*?|下一章.*?|上一章.*?"
+  },
+  "ruleFind": [
+    {
+      "title": "玄幻魔法",
+      "url": "http://www.qishuge.co/xuanhuan/"
+    },
+    {
+      "title": "武侠修真",
+      "url": "http://www.qishuge.co/wuxia/"
+    },
+    {
+      "title": "都市言情",
+      "url": "http://www.qishuge.co/dushi/"
+    },
+    {
+      "title": "历史军事",
+      "url": "http://www.qishuge.co/lishi/"
+    },
+    {
+      "title": "科幻灵异",
+      "url": "http://www.qishuge.co/kehuan/"
+    },
+    {
+      "title": "游戏竞技",
+      "url": "http://www.qishuge.co/youxi/"
+    },
+    {
+      "title": "最新入库",
+      "url": "http://www.qishuge.co/new/"
+    },
+    {
+      "title": "最近更新",
+      "url": "http://www.qishuge.co/update/"
+    }
+  ],
+  "header": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Referer": "http://www.qishuge.co/"
+  },
+  "enabled": true,
+  "enabledExplore": true,
+  "concurrentRate": "1",
+  "weight": 0
+}
