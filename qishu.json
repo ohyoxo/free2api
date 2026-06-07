@@ -1,1 +1,50 @@
-[{"bookSourceName":"奇书阁","bookSourceUrl":"http://www.qishuge.co/","searchUrl":"http://www.qishuge.co/soso61da1.html?searchkey={{key}}","bookSourceGroup":"小说","bookSourceComment":"完美适配开源阅读","bookSourceType":0,"enabled":true,"enabledExplore":true,"weight":20,"respondTime":200,"customOrder":0,"lastUpdateTime":1747062000000,"ruleBookInfo":{"name":"h1","author":".info span","coverUrl":".image img@src","intro":"#intro","lastChapter":".last a","kind":".cate"},"ruleToc":{"chapterList":"#list dl dd","chapterName":"a","chapterUrl":"a@href"},"ruleContent":{"content":"#content","nextContentUrl":".page a:nth-child(2)@href"},"ruleExplore":{"bookList":"#hotcontent .item","name":"dt a","bookUrl":"dt a@href","author":".btm","coverUrl":".image img@src","intro":"dd"},"ruleSearch":{"bookList":".list li","name":"a","bookUrl":"a@href","author":"i","coverUrl":"","intro":"","checkKeyWord":null}}]
+{
+  "bookSourceComment": "",
+  "bookSourceGroup": "",
+  "bookSourceName": "奇书网",
+  "bookSourceType": 0,
+  "bookSourceUrl": "http://www.qishuge.co",
+  "customOrder": 0,
+  "enabled": true,
+  "enabledCookieJar": false,
+  "enabledExplore": false,
+  "lastUpdateTime": 0,
+  "respondTime": 0,
+  "ruleBookInfo": {
+    "author": "class.info p@text",
+    "coverUrl": "class.info img@src",
+    "init": "",
+    "intro": "class.intro@text",
+    "kind": "",
+    "lastChapter": "",
+    "name": "class.info h1@text",
+    "tocUrl": ""
+  },
+  "ruleContent": {
+    "content": "id.content@html",
+    "nextContentUrl": "",
+    "replaceRegex": "",
+    "sourceRegex": "",
+    "sourceRegexReplace": ""
+  },
+  "ruleExplore": {},
+  "ruleSearch": {
+    "author": "tag.li.0.class.s5@text",
+    "bookList": "class.l ul li",
+    "bookUrl": "tag.h3.a@href",
+    "coverUrl": "",
+    "intro": "",
+    "kind": "",
+    "lastChapter": "",
+    "name": "tag.h3.a@text"
+  },
+  "ruleToc": {
+    "chapterList": "id.list dd",
+    "chapterName": "tag.a@text",
+    "chapterUrl": "tag.a@href",
+    "nextTocUrl": "",
+    "updateTime": ""
+  },
+  "searchUrl": "http://www.qishuge.co/soso61da1.html?searchkey={{key}}",
+  "weight": 0
+}
