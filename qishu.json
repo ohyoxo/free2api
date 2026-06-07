@@ -30,11 +30,11 @@
   "ruleExplore": {},
   "ruleSearch": {
     "author": "tag.li.0.class.s5@text",
-    "bookList": "class.novelslist ul li",
-    "bookUrl": "tag.span.0.tag.a@href",
+    "bookList": "class.novelslist li",
+    "bookUrl": "tag.span.1.tag.a@href",
     "coverUrl": "",
     "intro": "tag.dd@text",
-    "kind": "tag.span.0.class.s1@text",
+    "kind": "",
     "lastChapter": "",
     "name": "tag.span.1.tag.a@text"
   },
