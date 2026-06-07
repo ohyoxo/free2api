@@ -11,18 +11,18 @@
   "lastUpdateTime": 0,
   "respondTime": 0,
   "ruleBookInfo": {
-    "author": "class.info p@text",
+    "author": "class.info a@text",
     "coverUrl": "class.info img@src",
     "init": "",
     "intro": "class.intro@text",
-    "kind": "",
+    "kind": "class.info a@text",
     "lastChapter": "",
     "name": "class.info h1@text",
     "tocUrl": ""
   },
   "ruleContent": {
     "content": "id.content@html",
-    "nextContentUrl": "",
+    "nextContentUrl": "a#next_url@href",
     "replaceRegex": "",
     "sourceRegex": "",
     "sourceRegexReplace": ""
@@ -30,13 +30,13 @@
   "ruleExplore": {},
   "ruleSearch": {
     "author": "tag.li.0.class.s5@text",
-    "bookList": "class.l ul li",
-    "bookUrl": "tag.h3.a@href",
+    "bookList": "class.novelslist ul li",
+    "bookUrl": "tag.span.0.tag.a@href",
     "coverUrl": "",
-    "intro": "",
-    "kind": "",
+    "intro": "tag.dd@text",
+    "kind": "tag.span.0.class.s1@text",
     "lastChapter": "",
-    "name": "tag.h3.a@text"
+    "name": "tag.span.1.tag.a@text"
   },
   "ruleToc": {
     "chapterList": "id.list dd",
