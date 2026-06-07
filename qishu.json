@@ -1,6 +1,6 @@
 {
-  "bookSourceComment": "",
-  "bookSourceGroup": "",
+  "bookSourceComment": "基于奇书网 www.qishuge.co 制作，支持搜索、详情、目录、正文",
+  "bookSourceGroup": "小说",
   "bookSourceName": "奇书网",
   "bookSourceType": 0,
   "bookSourceUrl": "http://www.qishuge.co",
@@ -14,14 +14,14 @@
     "author": "#info p:first a@text",
     "coverUrl": "#fmimg img@src",
     "init": "",
-    "intro": "#intro@text",
+    "intro": "#intro@text##&nbsp;@|&lt;br&gt;@",
     "kind": ".con_top a:eq(1)@text",
     "lastChapter": "#info p.hidden-xs a@text",
     "name": "#info h1@text",
     "tocUrl": ""
   },
   "ruleContent": {
-    "content": "#booktxt@html",
+    "content": "#booktxt@html##&nbsp;@ |&lt;br&gt;@\n",
     "nextContentUrl": "a[rel=next]@href",
     "replaceRegex": "",
     "sourceRegex": "",
@@ -33,7 +33,7 @@
     "bookList": "div.item",
     "bookUrl": "dt a@href",
     "coverUrl": "div.image img@src",
-    "intro": "dd@text",
+    "intro": "dd@text##&nbsp;@ |&lt;br&gt;@",
     "kind": "",
     "lastChapter": "",
     "name": "dt a@text"
